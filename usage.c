@@ -4,7 +4,6 @@
  * Author:
  *  John Criswell
  *
- *
  * Description:
  *  Report useful information about the time and memory usage of processes.
  */
