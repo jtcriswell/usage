@@ -97,7 +97,7 @@ main (int argc, char ** argv) {
    * Get and report the resource usage.
    */
   if ((getrusage (RUSAGE_CHILDREN, &rusage)) == -1) {
-    perror ("Exec failed: ");
+    perror ("Getrusage failed: ");
     return -1;
   }
 
