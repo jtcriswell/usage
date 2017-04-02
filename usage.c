@@ -108,5 +108,14 @@ main (int argc, char ** argv) {
   printf ("\n");
   printf ("Maximum memory (KB): %d\n", rusage.ru_maxrss);
   printf ("Maximum memory (MB): %d\n", rusage.ru_maxrss / 1024);
+  printf ("\n");
+  printf ("Maximum code (KB): %d\n", rusage.ru_ixrss);
+  printf ("Maximum code (MB): %d\n", rusage.ru_ixrss / 1024);
+  printf ("\n");
+  printf ("Maximum data (KB): %d\n", rusage.ru_idrss);
+  printf ("Maximum data (MB): %d\n", rusage.ru_idrss / 1024);
+  printf ("\n");
+  printf ("Maximum stack (KB): %d\n", rusage.ru_isrss);
+  printf ("Maximum stack (MB): %d\n", rusage.ru_isrss / 1024);
   return 0;
 }
