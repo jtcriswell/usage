@@ -19,6 +19,39 @@
 #include <unistd.h>
 
 /*
+ * Function: findtMemTickSize()
+ *
+ * Description:
+ *  Find the memory size which is expected to be represented in
+ *  kilobytes * ticks-of-execution (as returned by getrusage()).
+ */
+static inline long
+findMemTickSize (long totalTime, long size) {
+  /* Ticks per second */
+  long ticksPerSecond;
+
+  /* Total (average?) memory size in KB */
+  long kbSize;
+
+  /*
+   * Find the number of ticks per second.
+   */
+  ticksPerSecond = sysconf(_SC_CLK_TCK);
+
+  /*
+   * Convert the size into KB * seconds into just KB by dividing by
+   * ticks / second and then by the total amount of CPU time used by the
+   * children processes.
+   */
+  kbSize = size / ticksPerSecond / totalTime;
+
+  /*
+   * Return the size.
+   */
+  return kbSize;
+}
+
+/*
  * Function: main()
  *
  * Description:
@@ -101,22 +134,39 @@ main (int argc, char ** argv) {
     return -1;
   }
 
-  printf ("User CPU time (s): %d\n", rusage.ru_utime.tv_sec);
-  printf ("System CPU time (s): %d\n", rusage.ru_stime.tv_sec);
-  printf ("Total CPU time (s): %d\n", rusage.ru_utime.tv_sec + rusage.ru_stime.tv_sec);
+  printf ("User CPU time (s): %ld\n", rusage.ru_utime.tv_sec);
+  printf ("System CPU time (s): %ld\n", rusage.ru_stime.tv_sec);
+  printf ("Total CPU time (s): %ld\n", rusage.ru_utime.tv_sec + rusage.ru_stime.tv_sec);
   printf ("Total Wall time (s): %6.2f\n", difftime (endTime,startTime));
   printf ("\n");
-  printf ("Maximum memory (KB): %d\n", rusage.ru_maxrss);
-  printf ("Maximum memory (MB): %d\n", rusage.ru_maxrss / 1024);
-  printf ("Maximum memory (GB): %d\n", rusage.ru_maxrss / 1024 / 1024);
+  printf ("Maximum memory (KB): %ld\n", rusage.ru_maxrss);
+  printf ("Maximum memory (MB): %ld\n", rusage.ru_maxrss / 1024);
+  printf ("Maximum memory (GB): %ld\n", rusage.ru_maxrss / 1024 / 1024);
   printf ("\n");
-  printf ("Maximum code (KB): %d\n", rusage.ru_ixrss);
-  printf ("Maximum code (MB): %d\n", rusage.ru_ixrss / 1024);
+
+  /*
+   * Compute the total amount of second the CPU was busy.  If it is less than
+   * a second, round it up to a second.
+   */
+  long totalTime = rusage.ru_utime.tv_sec - rusage.ru_stime.tv_sec;
+  if (totalTime < 1)
+    totalTime = 1;
+
+  /* Print code size */
+  long codeSize = findMemTickSize (totalTime, rusage.ru_ixrss);
+  printf ("Maximum code (KB): %ld\n", codeSize);
+  printf ("Maximum code (MB): %ld\n", codeSize / 1024);
   printf ("\n");
-  printf ("Maximum data (KB): %d\n", rusage.ru_idrss);
-  printf ("Maximum data (MB): %d\n", rusage.ru_idrss / 1024);
+
+  /* Print data size */
+  long dataSize = findMemTickSize (totalTime, rusage.ru_idrss);
+  printf ("Maximum data (KB): %ld\n", dataSize);
+  printf ("Maximum data (MB): %ld\n", dataSize / 1024);
   printf ("\n");
-  printf ("Maximum stack (KB): %d\n", rusage.ru_isrss);
-  printf ("Maximum stack (MB): %d\n", rusage.ru_isrss / 1024);
+
+  /* Print stack size */
+  long stackSize = findMemTickSize (totalTime, rusage.ru_isrss);
+  printf ("Maximum stack (KB): %ld\n", stackSize);
+  printf ("Maximum stack (MB): %ld\n", stackSize / 1024);
   return 0;
 }
