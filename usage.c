@@ -168,5 +168,12 @@ main (int argc, char ** argv) {
   long stackSize = findMemTickSize (totalTime, rusage.ru_isrss);
   printf ("Maximum stack (KB): %ld\n", stackSize);
   printf ("Maximum stack (MB): %ld\n", stackSize / 1024);
+  printf ("\n");
+
+  /*
+   * Print I/O statistics.
+   */
+  printf ("Number of FS Reads : %ld\n", rusage.ru_inblock);
+  printf ("Number of FS Writes: %ld\n", rusage.ru_oublock);
   return 0;
 }
